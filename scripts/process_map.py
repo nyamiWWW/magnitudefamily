@@ -1,38 +1,26 @@
 import os
+import random
 from PIL import Image
 
-# Налаштування
-BACKGROUND_PATH = "main_map.png"
-AVATARS_DIR = "avatars/"
-OUTPUT_PATH = "main_map.png"
-AVATAR_SIZE = (100, 100) # Розмір маленької аватарки
-
-def combine():
-    # Відкриваємо фон
-    bg = Image.open(BACKGROUND_PATH).convert("RGBA")
+def process():
+    bg = Image.open("main_map.png").convert("RGBA")
+    width, height = bg.size
     
-    # Отримуємо список усіх фото в папці avatars
-    avatars = [f for f in os.listdir(AVATARS_DIR) if f.endswith(('.png', '.jpg', '.jpeg'))]
+    avatar_files = os.listdir("avatars/")
     
-    x_offset = 50
-    y_offset = 50
+    for file in avatar_files:
+        if file.endswith(('.png', '.jpg')):
+            img = Image.open(f"avatars/{file}").convert("RGBA")
+            img = img.resize((100, 100)) # Розмір зірки
+            
+            # Випадкові координати
+            x = random.randint(0, width - 100)
+            y = random.randint(0, height - 100)
+            
+            bg.paste(img, (x, y), img)
+    
+    bg.save("main_map.png")
+    # Додаємо лічильник
+    print(f"Карту оновлено. Учасників: {len(avatar_files)}")
 
-    for file in avatars:
-        img = Image.open(os.path.join(AVATARS_DIR, file)).convert("RGBA")
-        img = img.resize(AVATAR_SIZE)
-        
-        # Накладаємо аватарку на фон
-        bg.paste(img, (x_offset, y_offset), img)
-        
-        # Зміщуємо координати для наступного фото (проста сітка)
-        x_offset += 120
-        if x_offset > bg.width - 100:
-            x_offset = 50
-            y_offset += 120
-
-    # Зберігаємо результат
-    bg.save(OUTPUT_PATH)
-    print(f"Оновлено! Додано {len(avatars)} учасників.")
-
-if __name__ == "__main__":
-    combine()
+process()
