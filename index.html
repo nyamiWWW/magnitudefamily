@@ -1,27 +1,99 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <title>Seismic community</title>
+    <meta charset="UTF-8">
+    <title>Space Community Map</title>
     <style>
-        body { background: #0b0d17; color: white; font-family: sans-serif; text-align: center; }
-        #map { max-width: 90%; border: 2px solid #444; margin: 20px auto; }
-        .upload-section { background: #1a1c2c; padding: 20px; border-radius: 10px; display: inline-block; }
+        body { background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; }
+        .container { max-width: 900px; margin: 50px auto; padding: 20px; border: 1px solid #1f2937; border-radius: 15px; background: #0d1117; }
+        #map-display { width: 100%; border-radius: 10px; border: 2px solid #30363d; margin-bottom: 20px; }
+        .controls { background: #161b22; padding: 20px; border-radius: 10px; }
+        .btn { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; text-decoration: none; display: inline-block; }
+        .btn:hover { background: #2ea043; }
+        .btn-download { background: #21262d; border: 1px solid #f0f6fc1a; margin-top: 10px; }
+        input[type="file"] { margin: 15px 0; }
+        #status { margin-top: 15px; color: #8b949e; }
     </style>
 </head>
 <body>
-    <h1>Add yourself to our universe!</h1>
-    
-    <img id="map" src="main_map.png" alt="Seismic map">
 
-    <div class="upload-section">
-        <h3>Imagine yourself:</h3>
-        <p>1. Натисніть кнопку нижче<br>2. Прикріпіть своє фото (pfp) у коментар<br>3. Натисніть "Submit new issue"</p>
-        
-        <a href="https://github.com/nyamiWWW/magnitudefamily/issues/new?title=Add+Me+to+Space&body=Прикріпіть+ваше+фото+сюди" 
-           target="_blank" 
-           style="background: #238636; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-           Завантажити моє фото
-        </a>
+<div class="container">
+    <h1>Космічна Спільнота</h1>
+    <p>Завантаж своє фото, щоб стати частиною нашого всесвіту.</p>
+    
+    <img id="map-display" src="main_map.png" alt="Завантаження карти...">
+    
+    <div class="controls">
+        <input type="file" id="avatarInput" accept="image/*">
+        <br>
+        <button class="btn" onclick="uploadAvatar()">🚀 Відправити в космос</button>
+        <br>
+        <a href="main_map.png" download="our_space.png" class="btn btn-download">⬇️ Скачати всю карту</a>
     </div>
+    
+    <div id="status"></div>
+</div>
+
+<script>
+    async function uploadAvatar() {
+        const fileInput = document.getElementById('avatarInput');
+        const status = document.getElementById('status');
+        
+        if (!fileInput.files[0]) {
+            alert("Спочатку вибери фото!");
+            return;
+        }
+
+        status.innerText = "🌟 Готуємо запуск...";
+        
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = async function() {
+            const base64Content = reader.result.split(',')[1];
+            const fileName = `user_${Math.floor(Math.random() * 1000000)}.png`;
+
+            // --- НАЛАШТУВАННЯ ТУТ ---
+            const GITHUB_TOKEN = "ВАШ_ТОКЕН_ТУТ"; // <--- ВСТАВТЕ ВАШ ТОКЕН СЮДИ
+            const REPO_PATH = "ВАШ_ЛОГІН/НАЗВА_РЕПОЗИТОРІЮ"; // <--- ВСТАВТЕ ВАШ ШЛЯХ (напр. artem/space-site)
+            // ------------------------
+
+            const url = `https://api.github.com/repos/${REPO_PATH}/contents/avatars/${fileName}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "New astronaut joined",
+                        content: base64Content
+                    })
+                });
+
+                if (response.ok) {
+                    status.innerHTML = "✅ Успіх! Карта оновиться через 1-2 хвилини. <br> Будь ласка, оновіть сторінку пізніше.";
+                    fileInput.value = "";
+                } else {
+                    const error = await response.json();
+                    status.innerText = "❌ Помилка: " + error.message;
+                }
+            } catch (e) {
+                status.innerText = "❌ Помилка зв'язку з космосом.";
+            }
+        };
+        
+        reader.readAsDataURL(file);
+    }
+
+    // Автоматичне оновлення картинки для користувача кожні 30 сек
+    setInterval(() => {
+        const img = document.getElementById('map-display');
+        img.src = "main_map.png?t=" + new Date().getTime();
+    }, 30000);
+</script>
+
 </body>
 </html>
