@@ -1,32 +1,33 @@
-name: Update Space Map
-
+name: Space Auto Update
 on:
   push:
     paths:
-      - 'avatars/**' # Запускати, коли додається нове фото
+      - 'avatars/**' # Спрацьовує, коли в папці avatars з'являється файл
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install Pillow
         run: pip install Pillow
 
-      - name: Run processing script
+      - name: Process Map
         run: python scripts/process_map.py
 
-      - name: Commit changes
+      - name: Commit & Push changes
         run: |
-          git config --local user.email "action@github.com"
+          git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add main_map.png
-          git commit -m "Update map with new member"
+          git commit -m "New astronaut on the map" || exit 0
           git push
