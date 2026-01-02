@@ -3,92 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Космічна Спільнота</title>
+    <title>Magnitude Family - Space Map</title>
     <style>
-        body { background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #30363d; border-radius: 15px; background: #0d1117; }
-        #map-display { width: 100%; border-radius: 10px; border: 2px solid #30363d; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
-        .controls { background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; }
-        .btn { background: #238636; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; text-decoration: none; display: inline-block; transition: 0.3s; }
-        .btn:hover { background: #2ea043; transform: scale(1.05); }
-        .btn-download { background: #21262d; border: 1px solid #f0f6fc1a; margin-top: 15px; font-size: 14px; }
-        input[type="file"] { margin: 20px 0; color: #8b949e; }
-        #status { margin-top: 20px; color: #58a6ff; font-weight: bold; }
-        .steps { text-align: left; font-size: 14px; color: #8b949e; margin-bottom: 20px; }
+        body {
+            background-color: #05070a;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #0d1117;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #30363d;
+        }
+        h1 { color: #58a6ff; }
+        #map-display {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #30363d;
+            margin-bottom: 20px;
+        }
+        .upload-box {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px dashed #444;
+        }
+        .btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn:hover { background: #2ea043; transform: scale(1.02); }
+        .btn:disabled { background: #444; }
+        #status { margin-top: 15px; font-size: 14px; color: #8b949e; }
+        .loader {
+            display: none;
+            margin: 10px auto;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #238636;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌌 Наш Космічний Всесвіт</h1>
-    <p>Стань частиною спільноти. Твоє PFP з'явиться як нова зірка!</p>
+    <h1>🌌 Magnitude Family Space</h1>
+    <p>Додай своє фото та стань частиною нашої спільноти на карті!</p>
     
-    <img id="map-display" src="main_map.png" alt="Завантаження карти...">
+    <img id="map-display" src="main_map.png" alt="Завантаження космічної карти...">
     
-    <div class="controls">
-        <div class="steps">
-            <strong>Як це працює:</strong><br>
-            1. Обери своє круте фото.<br>
-            2. Натисни кнопку "Відправити".<br>
-            3. На сторінці, що відкриється, просто натисни <b>"Submit new issue"</b>.
-        </div>
-
+    <div class="upload-box">
         <input type="file" id="avatarInput" accept="image/png, image/jpeg">
-        <br>
-        <button class="btn" onclick="prepareUpload()">🚀 Відправити в космос</button>
-        <br>
-        <a href="main_map.png" download="space_community.png" class="btn btn-download">⬇️ Скачати карту з усіма учасниками</a>
+        <br><br>
+        <button class="btn" id="uploadBtn" onclick="sendToSpace()">🚀 Відправити моє PFP</button>
+        <div class="loader" id="loader"></div>
+        <div id="status"></div>
     </div>
-    
-    <div id="status"></div>
+
+    <p style="font-size: 12px; margin-top: 20px;">
+        <a href="main_map.png" download="magnitude_family_space.png" style="color: #58a6ff; text-decoration: none;">
+            ⬇️ Скачати карту в повній якості
+        </a>
+    </p>
 </div>
 
 <script>
-    function prepareUpload() {
+    async function sendToSpace() {
         const fileInput = document.getElementById('avatarInput');
         const status = document.getElementById('status');
-        
+        const loader = document.getElementById('loader');
+        const btn = document.getElementById('uploadBtn');
+
         if (!fileInput.files[0]) {
-            alert("Будь ласка, спочатку обери файл!");
+            alert("Будь ласка, спочатку виберіть фото!");
             return;
         }
 
-        status.innerText = "✨ Обробка фото... Зачекайте секунду.";
-        
+        // Твоє посилання Pipedream
+        const PIPEDREAM_URL = "https://eoegyiszag3c5nz.m.pipedream.net"; 
+
+        btn.disabled = true;
+        loader.style.display = "block";
+        status.innerText = "Зв'язок із сервером... Фото летить у космос!";
+
         const file = fileInput.files[0];
         const reader = new FileReader();
         
-        reader.onload = function() {
-            // Конвертуємо в Base64 для передачі через URL
+        reader.onload = async function() {
             const base64Content = reader.result.split(',')[1];
-            
-            // --- НАЛАШТУВАННЯ ТУТ ---
-            const USERNAME = "nyamiwww"; 
-            const REPO_NAME = "magnitudefamily"; 
-            // ------------------------
+            const fileName = `pfp_${Date.now()}.png`;
 
-            const title = "ADD_PFP";
-            const body = base64Content;
+            try {
+                const response = await fetch(PIPEDREAM_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: fileName,
+                        content: base64Content
+                    })
+                });
 
-            // Формуємо посилання на створення Issue
-            const githubUrl = `https://github.com/${USERNAME}/${REPO_NAME}/issues/new?title=${title}&body=${body}`;
-            
-            status.innerHTML = "✅ Майже готово! <br> Зараз відкриється сторінка GitHub. Натисніть там зелену кнопку <b>'Submit new issue'</b>.";
-            
-            // Відкриваємо GitHub у новій вкладці
-            setTimeout(() => {
-                window.open(githubUrl, '_blank');
-            }, 2000);
+                if (response.ok) {
+                    status.style.color = "#7ee787";
+                    status.innerText = "✅ Успіх! Робот GitHub почав обробку. Зачекай 1-2 хвилини і карта оновиться.";
+                    fileInput.value = "";
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                status.style.color = "#ff7b72";
+                status.innerText = "❌ Помилка завантаження. Спробуй ще раз.";
+            } finally {
+                btn.disabled = false;
+                loader.style.display = "none";
+            }
         };
         
         reader.readAsDataURL(file);
     }
 
-    // Оновлення картинки кожні 60 секунд, щоб побачити нових учасників
+    // Авто-оновлення картинки без перезавантаження сторінки
     setInterval(() => {
         const img = document.getElementById('map-display');
-        img.src = "main_map.png?t=" + new Date().getTime();
-    }, 60000);
+        img.src = "main_map.png?v=" + new Date().getTime();
+    }, 45000);
 </script>
 
 </body>
