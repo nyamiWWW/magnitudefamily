@@ -1,0 +1,32 @@
+name: Update Space Map
+
+on:
+  push:
+    paths:
+      - 'avatars/**' # Запускати, коли додається нове фото
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install Pillow
+
+      - name: Run processing script
+        run: python scripts/process_map.py
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add main_map.png
+          git commit -m "Update map with new member"
+          git push
