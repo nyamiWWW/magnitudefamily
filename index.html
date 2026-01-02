@@ -2,97 +2,93 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Space Community Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Космічна Спільнота</title>
     <style>
-        body { background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; }
-        .container { max-width: 900px; margin: 50px auto; padding: 20px; border: 1px solid #1f2937; border-radius: 15px; background: #0d1117; }
-        #map-display { width: 100%; border-radius: 10px; border: 2px solid #30363d; margin-bottom: 20px; }
-        .controls { background: #161b22; padding: 20px; border-radius: 10px; }
-        .btn { background: #238636; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #2ea043; }
-        .btn-download { background: #21262d; border: 1px solid #f0f6fc1a; margin-top: 10px; }
-        input[type="file"] { margin: 15px 0; }
-        #status { margin-top: 15px; color: #8b949e; }
+        body { background: #05070a; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #30363d; border-radius: 15px; background: #0d1117; }
+        #map-display { width: 100%; border-radius: 10px; border: 2px solid #30363d; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,255,255,0.1); }
+        .controls { background: #161b22; padding: 30px; border-radius: 10px; border: 1px solid #30363d; }
+        .btn { background: #238636; color: white; border: none; padding: 15px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; text-decoration: none; display: inline-block; transition: 0.3s; }
+        .btn:hover { background: #2ea043; transform: scale(1.05); }
+        .btn-download { background: #21262d; border: 1px solid #f0f6fc1a; margin-top: 15px; font-size: 14px; }
+        input[type="file"] { margin: 20px 0; color: #8b949e; }
+        #status { margin-top: 20px; color: #58a6ff; font-weight: bold; }
+        .steps { text-align: left; font-size: 14px; color: #8b949e; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Космічна Спільнота</h1>
-    <p>Завантаж своє фото, щоб стати частиною нашого всесвіту.</p>
+    <h1>🌌 Наш Космічний Всесвіт</h1>
+    <p>Стань частиною спільноти. Твоє PFP з'явиться як нова зірка!</p>
     
     <img id="map-display" src="main_map.png" alt="Завантаження карти...">
     
     <div class="controls">
-        <input type="file" id="avatarInput" accept="image/*">
+        <div class="steps">
+            <strong>Як це працює:</strong><br>
+            1. Обери своє круте фото.<br>
+            2. Натисни кнопку "Відправити".<br>
+            3. На сторінці, що відкриється, просто натисни <b>"Submit new issue"</b>.
+        </div>
+
+        <input type="file" id="avatarInput" accept="image/png, image/jpeg">
         <br>
-        <button class="btn" onclick="uploadAvatar()">🚀 Відправити в космос</button>
+        <button class="btn" onclick="prepareUpload()">🚀 Відправити в космос</button>
         <br>
-        <a href="main_map.png" download="our_space.png" class="btn btn-download">⬇️ Скачати всю карту</a>
+        <a href="main_map.png" download="space_community.png" class="btn btn-download">⬇️ Скачати карту з усіма учасниками</a>
     </div>
     
     <div id="status"></div>
 </div>
 
 <script>
-    async function uploadAvatar() {
+    function prepareUpload() {
         const fileInput = document.getElementById('avatarInput');
         const status = document.getElementById('status');
         
         if (!fileInput.files[0]) {
-            alert("Спочатку вибери фото!");
+            alert("Будь ласка, спочатку обери файл!");
             return;
         }
 
-        status.innerText = "🌟 Готуємо запуск...";
+        status.innerText = "✨ Обробка фото... Зачекайте секунду.";
         
         const file = fileInput.files[0];
         const reader = new FileReader();
         
-        reader.onload = async function() {
+        reader.onload = function() {
+            // Конвертуємо в Base64 для передачі через URL
             const base64Content = reader.result.split(',')[1];
-            const fileName = `user_${Math.floor(Math.random() * 1000000)}.png`;
-
+            
             // --- НАЛАШТУВАННЯ ТУТ ---
-            const GITHUB_TOKEN = "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"; // <--- ВСТАВТЕ ВАШ ТОКЕН СЮДИ
-            const REPO_PATH = "nyamiwww/magnitudefamily"; // <--- ВСТАВТЕ ВАШ ШЛЯХ (напр. artem/space-site)
+            const USERNAME = "nyamiwww"; 
+            const REPO_NAME = "Seismicfamily"; 
             // ------------------------
 
-            const url = `https://api.github.com/repos/${REPO_PATH}/contents/avatars/${fileName}`;
+            const title = "ADD_PFP";
+            const body = base64Content;
 
-            try {
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: "New astronaut joined",
-                        content: base64Content
-                    })
-                });
-
-                if (response.ok) {
-                    status.innerHTML = "✅ Успіх! Карта оновиться через 1-2 хвилини. <br> Будь ласка, оновіть сторінку пізніше.";
-                    fileInput.value = "";
-                } else {
-                    const error = await response.json();
-                    status.innerText = "❌ Помилка: " + error.message;
-                }
-            } catch (e) {
-                status.innerText = "❌ Помилка зв'язку з космосом.";
-            }
+            // Формуємо посилання на створення Issue
+            const githubUrl = `https://github.com/${USERNAME}/${REPO_NAME}/issues/new?title=${title}&body=${body}`;
+            
+            status.innerHTML = "✅ Майже готово! <br> Зараз відкриється сторінка GitHub. Натисніть там зелену кнопку <b>'Submit new issue'</b>.";
+            
+            // Відкриваємо GitHub у новій вкладці
+            setTimeout(() => {
+                window.open(githubUrl, '_blank');
+            }, 2000);
         };
         
         reader.readAsDataURL(file);
     }
 
-    // Автоматичне оновлення картинки для користувача кожні 30 сек
+    // Оновлення картинки кожні 60 секунд, щоб побачити нових учасників
     setInterval(() => {
         const img = document.getElementById('map-display');
         img.src = "main_map.png?t=" + new Date().getTime();
-    }, 30000);
+    }, 60000);
 </script>
 
 </body>
