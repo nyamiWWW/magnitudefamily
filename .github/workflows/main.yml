@@ -1,17 +1,20 @@
 name: Space Auto Update
 on:
-  push:
-    paths:
-      - 'avatars/**' # Спрацьовує, коли в папці avatars з'являється файл
+  issues:
+    types: [opened]
 
 jobs:
   build:
+    if: contains(github.event.issue.title, 'ADD_PFP')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          persist-credentials: true
+
+      - name: Save image from issue
+        run: |
+          mkdir -p avatars
+          echo "${{ github.event.issue.body }}" | base64 --decode > avatars/user_${{ github.event.issue.number }}.png
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,5 +32,12 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add main_map.png
-          git commit -m "New astronaut on the map" || exit 0
+          git commit -m "Added astronaut from issue #${{ github.event.issue.number }}"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }} # Використовуємо наш секретний токен
+
+      - name: Close Issue
+        run: gh issue close ${{ github.event.issue.number }} --confirm
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
